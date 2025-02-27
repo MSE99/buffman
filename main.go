@@ -15,6 +15,11 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
+	_, dbErr := connectToDB(ctx, "buffman.db")
+	if dbErr != nil {
+		log.Fatal(dbErr)
+	}
+
 	app := fiber.New()
 
 	app.Get("/status", func(c *fiber.Ctx) error {
