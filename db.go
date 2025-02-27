@@ -15,12 +15,10 @@ func connectToDB(ctx context.Context, dbFilename string) (*sql.DB, error) {
 	defer conn.Close()
 
 	_, execErr := conn.ExecContext(ctx, `
-		CREATE TABLE IF NOT EXISTS Requests (
+		CREATE TABLE IF NOT EXISTS RequestsBacklog (
 			id INTEGER PRIMARY KEY,
-			status INTEGER,
 			payload TEXT,
 			createdOn DATETIME,
-			updatedOn DATETIME
 		);
 	`)
 	if execErr != nil {
