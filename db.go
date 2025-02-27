@@ -18,7 +18,7 @@ func connectToDB(ctx context.Context, dbFilename string) (*sql.DB, error) {
 		CREATE TABLE IF NOT EXISTS RequestsBacklog (
 			id INTEGER PRIMARY KEY,
 			payload TEXT,
-			createdOn DATETIME,
+			createdOn DATETIME
 		);
 	`)
 	if execErr != nil {
