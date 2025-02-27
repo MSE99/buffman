@@ -12,7 +12,6 @@ func connectToDB(ctx context.Context, dbFilename string) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
 
 	_, execErr := conn.ExecContext(ctx, `
 		CREATE TABLE IF NOT EXISTS RequestsBacklog (

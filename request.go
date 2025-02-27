@@ -7,9 +7,9 @@ import (
 )
 
 type request struct {
-	Id        int        `json:"id"`
-	Payload   string     `json:"string"`
-	CreatedOn *time.Time `json:"createdOn"`
+	Id        int       `json:"id"`
+	Payload   string    `json:"string"`
+	CreatedOn time.Time `json:"createdOn"`
 }
 
 func deleteRequestByID(ctx context.Context, db *sql.DB, id int) error {
@@ -17,20 +17,25 @@ func deleteRequestByID(ctx context.Context, db *sql.DB, id int) error {
 	return err
 }
 
-func insertRequest(ctx context.Context, db *sql.DB, req request) error {
-	_, err := db.ExecContext(
+func insertRequest(ctx context.Context, db *sql.DB, req request) (request, error) {
+	row := db.QueryRowContext(
 		ctx,
-		`INSERT INTO RequestsBacklog (id, payload, createdOn) VALUES (@id, @@payload, @createdOn)`,
-		sql.Named("id", req.Id),
+		`INSERT INTO RequestsBacklog (payload, createdOn) VALUES (@payload, @createdOn) RETURNING id, payload, createdOn`,
 		sql.Named("payload", req.Payload),
 		sql.Named("createdOn", req.CreatedOn),
 	)
 
-	return err
+	scanErr := row.Scan(
+		&req.Id,
+		&req.Payload,
+		&req.CreatedOn,
+	)
+
+	return req, scanErr
 }
 
 func loadUnfinishedRequests(ctx context.Context, db *sql.DB) ([]request, error) {
-	rows, err := db.QueryContext(ctx, `SELECT id, payload, createdOn FROM requests ORDER BY createdOn DESC`)
+	rows, err := db.QueryContext(ctx, `SELECT id, payload, createdOn FROM RequestsBacklog ORDER BY createdOn DESC`)
 	if err != nil {
 		return nil, err
 	}
