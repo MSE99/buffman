@@ -21,6 +21,10 @@ func main() {
 	}
 	defer db.Close()
 
+	dispatchChan := make(chan request)
+
+	go listenForDispatches(ctx, db, dispatchChan)
+
 	app := fiber.New()
 
 	app.Get("/status", func(c *fiber.Ctx) error {
