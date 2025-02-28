@@ -15,10 +15,11 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	_, dbErr := connectToDB(ctx, "buffman.db")
+	db, dbErr := connectToDB(ctx, "buffman.db")
 	if dbErr != nil {
 		log.Fatal(dbErr)
 	}
+	defer db.Close()
 
 	app := fiber.New()
 
