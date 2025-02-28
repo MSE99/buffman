@@ -31,6 +31,19 @@ func main() {
 		return c.Status(http.StatusOK).Send([]byte("OK"))
 	})
 
+	app.Post("/", func(c *fiber.Ctx) error {
+		payload := string(c.Body())
+
+		req := request{
+			Payload:   payload,
+			CreatedOn: time.Now(),
+		}
+
+		dispatchChan <- req
+
+		return c.Status(http.StatusOK).Send([]byte("OK"))
+	})
+
 	go app.Listen(":3000")
 
 	<-ctx.Done()
