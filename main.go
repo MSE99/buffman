@@ -15,7 +15,12 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	db, dbErr := connectToDB(ctx, "buffman.db")
+	config, configErr := loadConfigFile()
+	if configErr != nil {
+		log.Fatal(configErr)
+	}
+
+	db, dbErr := connectToDB(ctx, config.DB)
 	if dbErr != nil {
 		log.Fatal(dbErr)
 	}
