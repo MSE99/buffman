@@ -8,8 +8,6 @@ import (
 	"time"
 )
 
-var dispatchChan = make(chan request)
-
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
@@ -25,9 +23,12 @@ func main() {
 	}
 	defer db.Close()
 
-	go listenForDispatches(ctx, db, dispatchChan)
+	go processStoredRequests(ctx, requestProcessingOpts{
+		db:           db,
+		pollInterval: time.Second * 5,
+	})
 
-	app := createHttpServer()
+	app := createHttpServer(ctx, db)
 	go app.Listen(config.getHttpServerAddr())
 
 	<-ctx.Done()

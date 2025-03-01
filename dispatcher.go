@@ -3,38 +3,76 @@ package main
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
+	"net/http"
+	"strings"
+	"time"
 )
 
-// TODO
-func dispatchRequest(_ context.Context, _ *sql.DB, _ request) error {
-	return nil
+var processRequestsNow = make(chan bool)
+
+type requestProcessingOpts struct {
+	db           *sql.DB
+	pollInterval time.Duration
 }
 
-func listenForDispatches(ctx context.Context, db *sql.DB, requests <-chan request) {
+func processStoredRequests(ctx context.Context, opts requestProcessingOpts) {
+	db := opts.db
+	intr := opts.pollInterval
+
+	timer := time.NewTicker(intr)
+	defer timer.Stop()
+
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case req := <-requests:
-			if req.Id == 0 {
-				var err error
-				req, err = insertRequest(ctx, db, req)
-
-				if err != nil {
-					log.Println("error while dispatching", err)
-					continue
-				}
-			}
-
-			dispatchErr := dispatchRequest(ctx, db, req)
-
-			if dispatchErr != nil {
-				log.Println("error while dispatching", dispatchErr)
-				continue
-			}
-
-			_ = deleteRequestByID(ctx, db, req.Id)
+		case <-timer.C:
+			loadAndDispatch(ctx, db)
+		case <-processRequestsNow:
+			loadAndDispatch(ctx, db)
 		}
 	}
+}
+
+func loadAndDispatch(ctx context.Context, db *sql.DB) {
+	requests, err := loadUnfinishedRequests(ctx, db)
+	if err != nil {
+		log.Println("error while loading requests", err)
+	}
+
+	for _, req := range requests {
+		err := dispatchRequest(ctx, req)
+
+		if err != nil {
+			log.Println("error while dispatching request", err)
+			return
+		}
+
+		deleteRequestByID(ctx, db, req.Id)
+	}
+}
+
+func dispatchRequest(ctx context.Context, req request) error {
+	httpReq, httpReqErr := http.NewRequestWithContext(
+		ctx,
+		http.MethodPost,
+		"TODO",
+		strings.NewReader(req.Payload),
+	)
+	if httpReqErr != nil {
+		return httpReqErr
+	}
+
+	httpReq.Header.Add("Content-Type", "application/json")
+
+	res, resErr := http.DefaultClient.Do(httpReq)
+	if resErr != nil {
+		return resErr
+	} else if res.StatusCode != http.StatusOK {
+		return fmt.Errorf("received none 200 status code: %d", res.StatusCode)
+	}
+
+	return nil
 }
