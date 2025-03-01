@@ -23,6 +23,12 @@ func main() {
 	}
 	defer db.Close()
 
+	tk, tkErr := newFmaToken(ctx, &config)
+	if tkErr != nil {
+		log.Fatal(tkErr)
+	}
+	go tk.waitAndRefresh(&config)
+
 	go processStoredRequests(ctx, requestProcessingOpts{
 		db:           db,
 		pollInterval: time.Second * 5,
