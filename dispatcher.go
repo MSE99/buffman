@@ -15,10 +15,11 @@ var processRequestsNow = make(chan bool)
 type requestProcessingOpts struct {
 	db           *sql.DB
 	pollInterval time.Duration
+	tk           *fmaToken
+	conf         *config
 }
 
 func processStoredRequests(ctx context.Context, opts requestProcessingOpts) {
-	db := opts.db
 	intr := opts.pollInterval
 
 	timer := time.NewTicker(intr)
@@ -29,36 +30,36 @@ func processStoredRequests(ctx context.Context, opts requestProcessingOpts) {
 		case <-ctx.Done():
 			return
 		case <-timer.C:
-			loadAndDispatch(ctx, db)
+			loadAndDispatch(ctx, opts)
 		case <-processRequestsNow:
-			loadAndDispatch(ctx, db)
+			loadAndDispatch(ctx, opts)
 		}
 	}
 }
 
-func loadAndDispatch(ctx context.Context, db *sql.DB) {
-	requests, err := loadUnfinishedRequests(ctx, db)
+func loadAndDispatch(ctx context.Context, opts requestProcessingOpts) {
+	requests, err := loadUnfinishedRequests(ctx, opts.db)
 	if err != nil {
 		log.Println("error while loading requests", err)
 	}
 
 	for _, req := range requests {
-		err := dispatchRequest(ctx, req)
+		err := dispatchRequest(ctx, req, opts)
 
 		if err != nil {
 			log.Println("error while dispatching request", err)
 			return
 		}
 
-		deleteRequestByID(ctx, db, req.Id)
+		deleteRequestByID(ctx, opts.db, req.Id)
 	}
 }
 
-func dispatchRequest(ctx context.Context, req request) error {
+func dispatchRequest(ctx context.Context, req request, opts requestProcessingOpts) error {
 	httpReq, httpReqErr := http.NewRequestWithContext(
 		ctx,
 		http.MethodPost,
-		"TODO",
+		opts.conf.FmaDispatchURL,
 		strings.NewReader(req.Payload),
 	)
 	if httpReqErr != nil {
@@ -66,6 +67,10 @@ func dispatchRequest(ctx context.Context, req request) error {
 	}
 
 	httpReq.Header.Add("Content-Type", "application/json")
+	httpReq.Header.Add(
+		"Authorization",
+		fmt.Sprintf(`Bearer %s`, opts.tk.get()),
+	)
 
 	res, resErr := http.DefaultClient.Do(httpReq)
 	if resErr != nil {

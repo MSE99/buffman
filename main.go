@@ -32,6 +32,8 @@ func main() {
 	go processStoredRequests(ctx, requestProcessingOpts{
 		db:           db,
 		pollInterval: time.Second * 5,
+		tk:           tk,
+		conf:         &config,
 	})
 
 	app := createHttpServer(ctx, db)

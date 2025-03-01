@@ -10,7 +10,8 @@ type config struct {
 	HttpServerPort int    `json:"httpServerPort"`
 	FmaUsername    string `json:"fmaUsername"`
 	FmaPassword    string `json:"fmaPassword"`
-	FmaURL         string `json:"fmaUrl"`
+	FmaLoginURL    string `json:"fmaUrl"`
+	FmaDispatchURL string `json:"fmaDispatchUrl"`
 	DB             string `json:"db"`
 }
 

@@ -73,7 +73,7 @@ func fetchApiTokenFromFma(ctx context.Context, conf *config) (string, error) {
 		fmt.Sprintf(`{ "username": "%s", "password": "%s" }`, conf.FmaUsername, conf.FmaPassword),
 	)
 
-	req, reqErr := http.NewRequestWithContext(ctx, http.MethodPost, conf.FmaURL, body)
+	req, reqErr := http.NewRequestWithContext(ctx, http.MethodPost, conf.FmaLoginURL, body)
 	if reqErr != nil {
 		return "", reqErr
 	}
