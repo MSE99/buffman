@@ -14,6 +14,10 @@ type config struct {
 	DB             string `json:"db"`
 }
 
+func (c *config) getHttpServerAddr() string {
+	return fmt.Sprintf(":%d", c.HttpServerPort)
+}
+
 const configFilename = "config.json"
 
 func loadConfigFile() (config, error) {

@@ -3,13 +3,12 @@ package main
 import (
 	"context"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"time"
-
-	"github.com/gofiber/fiber/v2"
 )
+
+var dispatchChan = make(chan request)
 
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -26,30 +25,10 @@ func main() {
 	}
 	defer db.Close()
 
-	dispatchChan := make(chan request)
-
 	go listenForDispatches(ctx, db, dispatchChan)
 
-	app := fiber.New()
-
-	app.Get("/status", func(c *fiber.Ctx) error {
-		return c.Status(http.StatusOK).Send([]byte("OK"))
-	})
-
-	app.Post("/", func(c *fiber.Ctx) error {
-		payload := string(c.Body())
-
-		req := request{
-			Payload:   payload,
-			CreatedOn: time.Now(),
-		}
-
-		dispatchChan <- req
-
-		return c.Status(http.StatusOK).Send([]byte("OK"))
-	})
-
-	go app.Listen(":3000")
+	app := createHttpServer()
+	go app.Listen(config.getHttpServerAddr())
 
 	<-ctx.Done()
 
