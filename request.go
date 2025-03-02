@@ -35,7 +35,7 @@ func insertRequest(ctx context.Context, db *sql.DB, req request) (request, error
 }
 
 func loadUnfinishedRequests(ctx context.Context, db *sql.DB) ([]request, error) {
-	rows, err := db.QueryContext(ctx, `SELECT id, payload, createdOn FROM RequestsBacklog ORDER BY createdOn DESC`)
+	rows, err := db.QueryContext(ctx, `SELECT id, payload, createdOn FROM RequestsBacklog ORDER BY createdOn ASC`)
 	if err != nil {
 		return nil, err
 	}

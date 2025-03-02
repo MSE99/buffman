@@ -68,7 +68,7 @@ func Test_Request(t *testing.T) {
 
 		req2, err := insertRequest(ctx, db, request{
 			Payload:   "r1",
-			CreatedOn: now,
+			CreatedOn: now.Add(time.Second * 5),
 		})
 		if err != nil {
 			t.Fatal(err)
@@ -76,7 +76,7 @@ func Test_Request(t *testing.T) {
 
 		req3, err := insertRequest(ctx, db, request{
 			Payload:   "r1",
-			CreatedOn: now,
+			CreatedOn: now.Add(time.Second * 10),
 		})
 		if err != nil {
 			t.Fatal(err)
@@ -107,7 +107,7 @@ func Test_Request(t *testing.T) {
 
 		req2, err := insertRequest(ctx, db, request{
 			Payload:   "r1",
-			CreatedOn: now,
+			CreatedOn: now.Add(time.Second * 5),
 		})
 		if err != nil {
 			t.Fatal(err)
@@ -115,7 +115,7 @@ func Test_Request(t *testing.T) {
 
 		req3, err := insertRequest(ctx, db, request{
 			Payload:   "r1",
-			CreatedOn: now,
+			CreatedOn: now.Add(time.Second * 10),
 		})
 		if err != nil {
 			t.Fatal(err)
