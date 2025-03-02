@@ -1,38 +1,39 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
-type config struct {
-	HttpServerPort int    `json:"httpServerPort"`
-	FmaUsername    string `json:"fmaUsername"`
-	FmaPassword    string `json:"fmaPassword"`
-	FmaLoginURL    string `json:"fmaUrl"`
-	FmaDispatchURL string `json:"fmaDispatchUrl"`
-	DB             string `json:"db"`
-}
+var (
+	httpPort       string
+	fmaUsername    string
+	fmaPassword    string
+	fmaLoginURL    string
+	fmaDispatchURL string
+	dbFile         string
+	env            string
+)
 
-func (c *config) getHttpServerAddr() string {
-	return fmt.Sprintf(":%d", c.HttpServerPort)
-}
-
-const configFilename = "config.json"
-
-func loadConfigFile() (config, error) {
-	file, err := os.Open(configFilename)
-	if err != nil {
-		return config{}, fmt.Errorf("error while loading config file: %w", err)
+func loadConfigFromEnv() {
+	if os.Getenv("env") == "dev" {
+		godotenv.Load()
 	}
 
-	var result config
-	decodeErr := json.NewDecoder(file).Decode(&result)
+	env = getEnv("ENV", "dev")
+	httpPort = getEnv("PORT", "3000")
+	fmaUsername = getEnv("FMA_USERNAME")
+	fmaUsername = getEnv("FMA_PASSWORD")
+	fmaUsername = getEnv("FMA_LOGIN_URL")
+	fmaUsername = getEnv("FMA_DISPATCH_URL")
+	fmaUsername = getEnv("DB")
+}
 
-	if decodeErr != nil {
-		return config{}, fmt.Errorf("error while loading config file: config file json parse error: %w", decodeErr)
+func getEnv(key string, def ...string) string {
+	val, found := os.LookupEnv(key)
+	if !found && len(def) > 0 {
+		return def[0]
 	}
-
-	return result, nil
+	return val
 }

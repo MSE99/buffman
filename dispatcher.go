@@ -16,7 +16,6 @@ type requestProcessingOpts struct {
 	db           *sql.DB
 	pollInterval time.Duration
 	tk           *fmaToken
-	conf         *config
 }
 
 func processStoredRequests(ctx context.Context, opts requestProcessingOpts) {
@@ -59,7 +58,7 @@ func dispatchRequest(ctx context.Context, req request, opts requestProcessingOpt
 	httpReq, httpReqErr := http.NewRequestWithContext(
 		ctx,
 		http.MethodPost,
-		opts.conf.FmaDispatchURL,
+		fmaDispatchURL,
 		strings.NewReader(req.Payload),
 	)
 	if httpReqErr != nil {

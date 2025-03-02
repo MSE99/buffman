@@ -26,11 +26,11 @@ func (tk *fmaToken) get() string {
 	return tk.lastValue
 }
 
-func (tk *fmaToken) refresh(conf *config) {
+func (tk *fmaToken) refresh() {
 	tk.Lock()
 	defer tk.Unlock()
 
-	nextValue, err := fetchApiTokenFromFma(tk.ctx, conf)
+	nextValue, err := fetchApiTokenFromFma(tk.ctx)
 	if err != nil {
 		log.Println("error while refreshing token", err)
 		return
@@ -38,7 +38,7 @@ func (tk *fmaToken) refresh(conf *config) {
 	tk.lastValue = nextValue
 }
 
-func (tk *fmaToken) waitAndRefresh(conf *config) {
+func (tk *fmaToken) waitAndRefresh() {
 	ticker := time.NewTicker(tk.refreshInterval)
 	defer ticker.Stop()
 
@@ -48,13 +48,13 @@ func (tk *fmaToken) waitAndRefresh(conf *config) {
 			return
 
 		case <-ticker.C:
-			tk.refresh(conf)
+			tk.refresh()
 		}
 	}
 }
 
-func newFmaToken(ctx context.Context, conf *config) (*fmaToken, error) {
-	lastValue, err := fetchApiTokenFromFma(ctx, conf)
+func newFmaToken(ctx context.Context) (*fmaToken, error) {
+	lastValue, err := fetchApiTokenFromFma(ctx)
 	if err != nil {
 		return &fmaToken{}, err
 	}
@@ -68,12 +68,12 @@ func newFmaToken(ctx context.Context, conf *config) (*fmaToken, error) {
 	return &token, nil
 }
 
-func fetchApiTokenFromFma(ctx context.Context, conf *config) (string, error) {
+func fetchApiTokenFromFma(ctx context.Context) (string, error) {
 	body := strings.NewReader(
-		fmt.Sprintf(`{ "username": "%s", "password": "%s" }`, conf.FmaUsername, conf.FmaPassword),
+		fmt.Sprintf(`{ "username": "%s", "password": "%s" }`, fmaUsername, fmaPassword),
 	)
 
-	req, reqErr := http.NewRequestWithContext(ctx, http.MethodPost, conf.FmaLoginURL, body)
+	req, reqErr := http.NewRequestWithContext(ctx, http.MethodPost, fmaLoginURL, body)
 	if reqErr != nil {
 		return "", reqErr
 	}

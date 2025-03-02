@@ -9,35 +9,33 @@ import (
 )
 
 func main() {
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	loadConfigFromEnv()
+
+	log.Println("running in ", env)
+
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
 	defer cancel()
 
-	config, configErr := loadConfigFile()
-	if configErr != nil {
-		log.Fatal(configErr)
-	}
-
-	db, dbErr := connectToDB(ctx, config.DB)
+	db, dbErr := connectToDB(ctx, dbFile)
 	if dbErr != nil {
 		log.Fatal(dbErr)
 	}
 	defer db.Close()
 
-	tk, tkErr := newFmaToken(ctx, &config)
+	tk, tkErr := newFmaToken(ctx)
 	if tkErr != nil {
 		log.Fatal(tkErr)
 	}
-	go tk.waitAndRefresh(&config)
+	go tk.waitAndRefresh()
 
 	go processStoredRequests(ctx, requestProcessingOpts{
 		db:           db,
 		pollInterval: time.Second * 5,
 		tk:           tk,
-		conf:         &config,
 	})
 
 	app := createHttpServer(ctx, db)
-	go app.Listen(config.getHttpServerAddr())
+	go app.Listen(":" + httpPort)
 
 	<-ctx.Done()
 
