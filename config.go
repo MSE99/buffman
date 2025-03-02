@@ -17,17 +17,17 @@ var (
 )
 
 func loadConfigFromEnv() {
-	if os.Getenv("env") == "dev" {
+	if os.Getenv("ENV") == "" || os.Getenv("ENV") == "dev" {
 		godotenv.Load()
 	}
 
 	env = getEnv("ENV", "dev")
 	httpPort = getEnv("PORT", "3000")
 	fmaUsername = getEnv("FMA_USERNAME")
-	fmaUsername = getEnv("FMA_PASSWORD")
-	fmaUsername = getEnv("FMA_LOGIN_URL")
-	fmaUsername = getEnv("FMA_DISPATCH_URL")
-	fmaUsername = getEnv("DB")
+	fmaPassword = getEnv("FMA_PASSWORD")
+	fmaLoginURL = getEnv("FMA_LOGIN_URL")
+	fmaDispatchURL = getEnv("FMA_DISPATCH_URL")
+	dbFile = getEnv("DB")
 }
 
 func getEnv(key string, def ...string) string {

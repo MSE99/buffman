@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -62,7 +62,7 @@ func newFmaToken(ctx context.Context) (*fmaToken, error) {
 	token := fmaToken{
 		ctx:             ctx,
 		lastValue:       lastValue,
-		refreshInterval: time.Minute * 15,
+		refreshInterval: time.Minute * 30,
 	}
 
 	return &token, nil
@@ -77,6 +77,8 @@ func fetchApiTokenFromFma(ctx context.Context) (string, error) {
 	if reqErr != nil {
 		return "", reqErr
 	}
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("x-app", "operator-dashboard")
 
 	res, resErr := http.DefaultClient.Do(req)
 	if resErr != nil {
@@ -88,10 +90,15 @@ func fetchApiTokenFromFma(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("received none 200 status code %v", res.StatusCode)
 	}
 
-	tokenBytes, readErr := io.ReadAll(res.Body)
-	if readErr != nil {
-		return "", fmt.Errorf("error while reading response body: %w", readErr)
+	var responseBody struct {
+		Result struct {
+			Token string `json:"token"`
+		} `json:"result"`
+	}
+	decodeErr := json.NewDecoder(res.Body).Decode(&responseBody)
+	if decodeErr != nil {
+		return "", fmt.Errorf("error while reading response body: %w", decodeErr)
 	}
 
-	return string(tokenBytes), nil
+	return responseBody.Result.Token, nil
 }

@@ -35,7 +35,14 @@ func main() {
 	})
 
 	app := createHttpServer(ctx, db)
-	go app.Listen(":" + httpPort)
+
+	go func() {
+		err := app.Listen(":" + httpPort)
+
+		if err != nil {
+			log.Println("failed to listen", err)
+		}
+	}()
 
 	<-ctx.Done()
 
