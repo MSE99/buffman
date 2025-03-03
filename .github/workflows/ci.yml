@@ -6,17 +6,6 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-
-      - name: Lint
-        run: go vet
-
-      - name: Build
-        run: go build ./...
-
-      - name: Go test
-        run: go test ./... -cover -race
+    tests-and-linting:
+      uses: ./.github/workflows/tests-and-linting.yml
+      secrets: inherit
