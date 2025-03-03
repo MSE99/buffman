@@ -6,6 +6,5 @@ on:
 
 jobs:
   build-and-test:
-    tests-and-linting:
-      uses: ./.github/workflows/tests-and-linting.yml
-      secrets: inherit
+    uses: ./.github/workflows/tests-and-linting.yml
+    secrets: inherit
