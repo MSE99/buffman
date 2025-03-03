@@ -1,0 +1,19 @@
+name: CI
+
+on:
+  push:
+    branches: ["*"]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+
+      - name: Go vet
+        run: go vet
+
+      - name: Go build
+        run: go build ./...
