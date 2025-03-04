@@ -5,9 +5,11 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 func createHttpServer(ctx context.Context, db *sql.DB) *fiber.App {
@@ -17,6 +19,8 @@ func createHttpServer(ctx context.Context, db *sql.DB) *fiber.App {
 }
 
 func setupRouter(ctx context.Context, app *fiber.App, db *sql.DB) {
+	app.Use(logger.New(logger.Config{Output: os.Stdout0}))
+
 	app.Get("/status", func(c *fiber.Ctx) error {
 		return c.Status(http.StatusOK).Send([]byte("OK"))
 	})
@@ -37,4 +41,5 @@ func setupRouter(ctx context.Context, app *fiber.App, db *sql.DB) {
 
 		return c.Status(http.StatusOK).Send([]byte("OK"))
 	})
+
 }

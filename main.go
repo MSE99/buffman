@@ -10,6 +10,7 @@ import (
 
 func main() {
 	loadConfigFromEnv()
+	log.SetOutput(os.Stdout)
 
 	log.Println("running in ", env)
 
