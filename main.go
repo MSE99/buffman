@@ -10,8 +10,8 @@ import (
 
 func main() {
 	loadConfigFromEnv()
-	log.SetOutput(os.Stdout)
 
+	log.SetOutput(os.Stdout)
 	log.Println("running in ", env)
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
