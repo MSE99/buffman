@@ -19,7 +19,7 @@ func createHttpServer(ctx context.Context, db *sql.DB) *fiber.App {
 }
 
 func setupRouter(ctx context.Context, app *fiber.App, db *sql.DB) {
-	app.Use(logger.New(logger.Config{Output: os.Stdout0}))
+	app.Use(logger.New(logger.Config{Output: os.Stdout}))
 
 	app.Get("/status", func(c *fiber.Ctx) error {
 		return c.Status(http.StatusOK).Send([]byte("OK"))
