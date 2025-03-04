@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
+	"crypto/subtle"
 	"database/sql"
 	"log"
 	"net/http"
@@ -26,6 +28,14 @@ func setupRouter(ctx context.Context, app *fiber.App, db *sql.DB) {
 	})
 
 	app.Post("/", func(c *fiber.Ctx) error {
+		token := c.Params("token")
+		hashedToken := sha256.Sum256([]byte(token))
+
+		if subtle.ConstantTimeCompare(hashedToken[:], []byte(odooSecret)) == 0 {
+			log.Println("received request with invalid secret")
+			return c.Status(http.StatusUnauthorized).Send([]byte("Unauthorized"))
+		}
+
 		payload := string(c.Body())
 
 		_, err := insertRequest(ctx, db, request{

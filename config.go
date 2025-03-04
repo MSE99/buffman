@@ -14,6 +14,7 @@ var (
 	fmaDispatchURL string
 	dbFile         string
 	env            string
+	odooSecret     string
 )
 
 func loadConfigFromEnv() {
@@ -28,6 +29,7 @@ func loadConfigFromEnv() {
 	fmaLoginURL = getEnv("FMA_LOGIN_URL")
 	fmaDispatchURL = getEnv("FMA_DISPATCH_URL")
 	dbFile = getEnv("DB")
+	odooSecret = getEnv("ODOO_SECRET")
 }
 
 func getEnv(key string, def ...string) string {
