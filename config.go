@@ -18,6 +18,7 @@ var (
 	env            string
 	odooSecret     string
 	pollInterval   time.Duration
+	loginInterval  time.Duration
 )
 
 func loadConfigFromEnv() {
@@ -34,11 +35,17 @@ func loadConfigFromEnv() {
 	dbFile = getEnv("DB")
 	odooSecret = getEnv("ODOO_SECRET")
 
-	parsedPollIntr, err := time.ParseDuration(getEnv("POLL_INTERVAL", "1s"))
-	if err != nil {
-		log.Panic(err)
+	parsedPollIntr, pollErr := time.ParseDuration(getEnv("POLL_INTERVAL", "1s"))
+	if pollErr != nil {
+		log.Panic(pollErr)
 	}
 	pollInterval = parsedPollIntr
+
+	loginRefreshIntr, loginErr := time.ParseDuration(getEnv("LOGIN_INTERVAL", "30m"))
+	if loginErr != nil {
+		log.Panic(loginErr)
+	}
+	loginInterval = loginRefreshIntr
 }
 
 func getEnv(key string, def ...string) string {

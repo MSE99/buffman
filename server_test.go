@@ -263,4 +263,54 @@ func TestRequestProcessing(t *testing.T) {
 			t.Errorf("expected last dispatched value to be FOO but got %s", string(dispatches[0]))
 		}
 	})
+
+	t.Run("TokenRefresh", func(t *testing.T) {
+		var (
+			l          sync.Mutex
+			loginCount = 0
+		)
+
+		loginServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			l.Lock()
+			defer l.Unlock()
+
+			defer r.Body.Close()
+
+			var body struct {
+				Username string `json:"username"`
+				Password string `json:"password"`
+			}
+
+			decodeErr := json.NewDecoder(r.Body).Decode(&body)
+			assertNotErr(t, decodeErr)
+
+			if body.Username != "admin" && body.Password != "admin" {
+				t.Errorf("invalid credentials supplied to login server %s %s", body.Username, body.Password)
+			}
+
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(fmt.Sprintf(`{ "result": { "token": "FMA_TOKEN_FROM_LOGIN_%d" } }`, loginCount)))
+
+			loginCount++
+		}))
+
+		dispatchServer, _ := createDispatchServer(t)
+
+		fmaLoginURL = loginServer.URL
+		fmaDispatchURL = dispatchServer.URL
+		odooSecret = "hi!"
+		pollInterval = time.Millisecond * 350
+		loginInterval = time.Millisecond * 100
+
+		createTestApp(t)
+
+		time.Sleep(time.Millisecond * 500)
+
+		l.Lock()
+		defer l.Unlock()
+
+		if loginCount < 3 {
+			t.Errorf("Expected fma token to be refreshed at least 3 times but got %d refreshes", loginCount)
+		}
+	})
 }

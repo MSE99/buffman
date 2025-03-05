@@ -14,9 +14,8 @@ import (
 type fmaToken struct {
 	sync.RWMutex
 
-	lastValue       string
-	refreshInterval time.Duration
-	ctx             context.Context
+	lastValue string
+	ctx       context.Context
 }
 
 func (tk *fmaToken) get() string {
@@ -39,7 +38,7 @@ func (tk *fmaToken) refresh() {
 }
 
 func (tk *fmaToken) waitAndRefresh() {
-	ticker := time.NewTicker(tk.refreshInterval)
+	ticker := time.NewTicker(loginInterval)
 	defer ticker.Stop()
 
 	for {
@@ -60,9 +59,8 @@ func newFmaToken(ctx context.Context) (*fmaToken, error) {
 	}
 
 	token := fmaToken{
-		ctx:             ctx,
-		lastValue:       lastValue,
-		refreshInterval: time.Minute * 30,
+		ctx:       ctx,
+		lastValue: lastValue,
 	}
 
 	return &token, nil
