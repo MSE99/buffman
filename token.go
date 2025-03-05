@@ -44,9 +44,11 @@ func (tk *fmaToken) waitAndRefresh() {
 	for {
 		select {
 		case <-tk.ctx.Done():
+			log.Println("stopping token refresh")
 			return
 
 		case <-ticker.C:
+			log.Println("refreshing token")
 			tk.refresh()
 		}
 	}

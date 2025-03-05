@@ -26,10 +26,13 @@ func processStoredRequests(ctx context.Context, opts requestProcessingOpts) {
 	for {
 		select {
 		case <-ctx.Done():
+			log.Println("shutting down request polling")
 			return
 		case <-timer.C:
+			log.Println("timed poll for stored requests")
 			loadAndDispatch(ctx, opts)
 		case <-processRequestsNow:
+			log.Println("polling because of a poll signal")
 			loadAndDispatch(ctx, opts)
 		}
 	}
