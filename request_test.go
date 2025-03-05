@@ -12,6 +12,9 @@ func connectToTestingDB(t *testing.T) *sql.DB {
 	if err != nil {
 		t.Fatal(err)
 	}
+	t.Cleanup(func() {
+		db.Close()
+	})
 	return db
 }
 
@@ -20,7 +23,6 @@ func Test_Request(t *testing.T) {
 
 	t.Run("insertNewRequest should return a request with filled id field", func(t *testing.T) {
 		db := connectToTestingDB(t)
-		defer db.Close()
 
 		now := time.Now()
 
@@ -42,7 +44,6 @@ func Test_Request(t *testing.T) {
 
 	t.Run("loading unfinished requests with empty DB", func(t *testing.T) {
 		db := connectToTestingDB(t)
-		defer db.Close()
 
 		requests, err := loadUnfinishedRequests(ctx, db)
 		if err != nil {
@@ -54,7 +55,6 @@ func Test_Request(t *testing.T) {
 
 	t.Run("inserting and loading unfinished requests", func(t *testing.T) {
 		db := connectToTestingDB(t)
-		defer db.Close()
 
 		now := time.Now()
 
@@ -93,7 +93,6 @@ func Test_Request(t *testing.T) {
 
 	t.Run("inserting then deleting and loading unfinished requests", func(t *testing.T) {
 		db := connectToTestingDB(t)
-		defer db.Close()
 
 		now := time.Now()
 
