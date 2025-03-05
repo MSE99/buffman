@@ -28,15 +28,20 @@ func setupRouter(ctx context.Context, app *fiber.App, db *sql.DB) {
 	})
 
 	app.Post("/", func(c *fiber.Ctx) error {
-		token := c.Params("token")
+		token := c.Query("token")
 		hashedToken := sha256.Sum256([]byte(token))
+		hashedOdooScret := sha256.Sum256([]byte(odooSecret))
 
-		if subtle.ConstantTimeCompare(hashedToken[:], []byte(odooSecret)) == 0 {
+		if subtle.ConstantTimeCompare(hashedToken[:], hashedOdooScret[:]) == 0 {
 			log.Println("received request with invalid secret")
 			return c.Status(http.StatusUnauthorized).Send([]byte("Unauthorized"))
 		}
 
 		payload := string(c.Body())
+
+		if len(payload) == 0 {
+			return c.Status(http.StatusBadRequest).Send([]byte("Invalid body sent"))
+		}
 
 		_, err := insertRequest(ctx, db, request{
 			Payload:   payload,

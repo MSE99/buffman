@@ -13,13 +13,12 @@ import (
 var processRequestsNow = make(chan bool)
 
 type requestProcessingOpts struct {
-	db           *sql.DB
-	pollInterval time.Duration
-	tk           *fmaToken
+	db *sql.DB
+	tk *fmaToken
 }
 
 func processStoredRequests(ctx context.Context, opts requestProcessingOpts) {
-	intr := opts.pollInterval
+	intr := pollInterval
 
 	timer := time.NewTicker(intr)
 	defer timer.Stop()

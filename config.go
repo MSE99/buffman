@@ -1,7 +1,9 @@
 package main
 
 import (
+	"log"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -15,6 +17,7 @@ var (
 	dbFile         string
 	env            string
 	odooSecret     string
+	pollInterval   time.Duration
 )
 
 func loadConfigFromEnv() {
@@ -30,6 +33,12 @@ func loadConfigFromEnv() {
 	fmaDispatchURL = getEnv("FMA_DISPATCH_URL")
 	dbFile = getEnv("DB")
 	odooSecret = getEnv("ODOO_SECRET")
+
+	parsedPollIntr, err := time.ParseDuration(getEnv("POLL_INTERVAL", "1s"))
+	if err != nil {
+		log.Panic(err)
+	}
+	pollInterval = parsedPollIntr
 }
 
 func getEnv(key string, def ...string) string {

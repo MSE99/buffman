@@ -30,9 +30,8 @@ func main() {
 	go tk.waitAndRefresh()
 
 	go processStoredRequests(ctx, requestProcessingOpts{
-		db:           db,
-		pollInterval: time.Second * 5,
-		tk:           tk,
+		db: db,
+		tk: tk,
 	})
 
 	app := createHttpServer(ctx, db)
