@@ -12,7 +12,7 @@ import (
 	"github.com/mse99/buffman/config"
 )
 
-var processRequestsNow = make(chan bool)
+var processRequestsNow = make(chan struct{})
 
 type requestProcessingOpts struct {
 	db *sql.DB
@@ -83,4 +83,23 @@ func dispatchRequest(ctx context.Context, req Request, opts requestProcessingOpt
 	}
 
 	return nil
+}
+
+func QueueRequest(ctx context.Context, db *sql.DB, r Request) error {
+	_, err := insertRequest(ctx, db, r)
+	if err != nil {
+		return err
+	}
+
+	timer := time.NewTimer(time.Millisecond * 50)
+	defer timer.Stop()
+
+	select {
+	case processRequestsNow <- struct{}{}:
+		return nil
+	case <-timer.C:
+		return nil
+	case <-ctx.Done():
+		return nil
+	}
 }

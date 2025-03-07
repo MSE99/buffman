@@ -8,9 +8,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/mse99/buffman/buffman"
 	"github.com/mse99/buffman/config"
 )
 
@@ -30,9 +32,9 @@ func setupRouter(ctx context.Context, app *fiber.App, db *sql.DB) {
 	app.Post("/", func(c *fiber.Ctx) error {
 		token := c.Query("token")
 		hashedToken := sha256.Sum256([]byte(token))
-		hashedOdooScret := sha256.Sum256([]byte(config.OdooSecret))
+		hashedOdooSecret := sha256.Sum256([]byte(config.OdooSecret))
 
-		if subtle.ConstantTimeCompare(hashedToken[:], hashedOdooScret[:]) == 0 {
+		if subtle.ConstantTimeCompare(hashedToken[:], hashedOdooSecret[:]) == 0 {
 			log.Println("received request with invalid secret")
 			return c.Status(http.StatusUnauthorized).Send([]byte("Unauthorized"))
 		}
@@ -43,15 +45,11 @@ func setupRouter(ctx context.Context, app *fiber.App, db *sql.DB) {
 			return c.Status(http.StatusBadRequest).Send([]byte("Invalid body sent"))
 		}
 
-		// _, err := insertRequest(ctx, db, request{
-		// 	Payload:   payload,
-		// 	CreatedOn: time.Now(),
-		// })
-		// if err != nil {
-		// 	log.Println(err)
-		// 	return c.Status(http.StatusInternalServerError).Send([]byte(""))
-		// }
-		// processRequestsNow <- true
+		queueErr := buffman.QueueRequest(ctx, db, buffman.Request{Payload: payload, CreatedOn: time.Now()})
+		if queueErr != nil {
+			log.Println(queueErr)
+			return c.Status(http.StatusInternalServerError).Send([]byte(""))
+		}
 
 		return c.Status(http.StatusOK).Send([]byte("OK"))
 	})
