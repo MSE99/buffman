@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/mse99/buffman/config"
 )
 
 var processRequestsNow = make(chan bool)
@@ -18,7 +20,7 @@ type requestProcessingOpts struct {
 }
 
 func processStoredRequests(ctx context.Context, opts requestProcessingOpts) {
-	intr := pollInterval
+	intr := config.PollInterval
 
 	timer := time.NewTicker(intr)
 	defer timer.Stop()
@@ -60,7 +62,7 @@ func dispatchRequest(ctx context.Context, req request, opts requestProcessingOpt
 	httpReq, httpReqErr := http.NewRequestWithContext(
 		ctx,
 		http.MethodPost,
-		fmaDispatchURL,
+		config.FmaDispatchURL,
 		strings.NewReader(req.Payload),
 	)
 	if httpReqErr != nil {

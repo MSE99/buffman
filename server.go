@@ -12,6 +12,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/mse99/buffman/config"
 )
 
 func createHttpServer(ctx context.Context, db *sql.DB) *fiber.App {
@@ -30,7 +31,7 @@ func setupRouter(ctx context.Context, app *fiber.App, db *sql.DB) {
 	app.Post("/", func(c *fiber.Ctx) error {
 		token := c.Query("token")
 		hashedToken := sha256.Sum256([]byte(token))
-		hashedOdooScret := sha256.Sum256([]byte(odooSecret))
+		hashedOdooScret := sha256.Sum256([]byte(config.OdooSecret))
 
 		if subtle.ConstantTimeCompare(hashedToken[:], hashedOdooScret[:]) == 0 {
 			log.Println("received request with invalid secret")

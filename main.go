@@ -6,18 +6,20 @@ import (
 	"os"
 	"os/signal"
 	"time"
+
+	"github.com/mse99/buffman/config"
 )
 
 func main() {
-	loadConfigFromEnv()
+	config.Load()
 
 	log.SetOutput(os.Stdout)
-	log.Println("running in ", env)
+	log.Println("running in ", config.Env)
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
 	defer cancel()
 
-	db, dbErr := connectToDB(ctx, dbFile)
+	db, dbErr := connectToDB(ctx, config.DbFile)
 	if dbErr != nil {
 		log.Fatal(dbErr)
 	}
@@ -37,7 +39,7 @@ func main() {
 	app := createHttpServer(ctx, db)
 
 	go func() {
-		err := app.Listen(":" + httpPort)
+		err := app.Listen(":" + config.HttpPort)
 
 		if err != nil {
 			log.Println("failed to listen", err)

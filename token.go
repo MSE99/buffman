@@ -9,6 +9,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/mse99/buffman/config"
 )
 
 type fmaToken struct {
@@ -38,7 +40,7 @@ func (tk *fmaToken) refresh() {
 }
 
 func (tk *fmaToken) waitAndRefresh() {
-	ticker := time.NewTicker(loginInterval)
+	ticker := time.NewTicker(config.LoginInterval)
 	defer ticker.Stop()
 
 	for {
@@ -70,10 +72,10 @@ func newFmaToken(ctx context.Context) (*fmaToken, error) {
 
 func fetchApiTokenFromFma(ctx context.Context) (string, error) {
 	body := strings.NewReader(
-		fmt.Sprintf(`{ "username": "%s", "password": "%s" }`, fmaUsername, fmaPassword),
+		fmt.Sprintf(`{ "username": "%s", "password": "%s" }`, config.FmaUsername, config.FmaPassword),
 	)
 
-	req, reqErr := http.NewRequestWithContext(ctx, http.MethodPost, fmaLoginURL, body)
+	req, reqErr := http.NewRequestWithContext(ctx, http.MethodPost, config.FmaLoginURL, body)
 	if reqErr != nil {
 		return "", reqErr
 	}

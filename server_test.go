@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/mse99/buffman/config"
 )
 
 func assertNotErr(t *testing.T, err error) {
@@ -118,15 +119,18 @@ func TestStatus(t *testing.T) {
 }
 
 func TestRequestProcessing(t *testing.T) {
-	fmaUsername = "admin"
-	fmaPassword = "admin"
+	config.FmaUsername = "admin"
+	config.FmaPassword = "admin"
 
 	t.Run("InvalidSecret", func(t *testing.T) {
-		loginServer := createLoginServer(t, fmaUsername, fmaPassword)
+		loginServer := createLoginServer(t, config.FmaUsername, config.FmaPassword)
 		dispatchServer, _ := createDispatchServer(t)
 
-		fmaLoginURL = loginServer.URL
-		fmaDispatchURL = dispatchServer.URL
+		config.FmaLoginURL = loginServer.URL
+		config.FmaDispatchURL = dispatchServer.URL
+		config.LoginInterval = time.Millisecond * 100
+		config.PollInterval = time.Millisecond * 100
+		config.OdooSecret = "Foo-123"
 
 		app, _ := createTestApp(t)
 
@@ -141,16 +145,18 @@ func TestRequestProcessing(t *testing.T) {
 	})
 
 	t.Run("InvalidPayload", func(t *testing.T) {
-		loginServer := createLoginServer(t, fmaUsername, fmaPassword)
+		loginServer := createLoginServer(t, config.FmaUsername, config.FmaPassword)
 		dispatchServer, _ := createDispatchServer(t)
 
-		fmaLoginURL = loginServer.URL
-		fmaDispatchURL = dispatchServer.URL
-		odooSecret = "hi!"
+		config.FmaLoginURL = loginServer.URL
+		config.FmaDispatchURL = dispatchServer.URL
+		config.LoginInterval = time.Millisecond * 100
+		config.PollInterval = time.Millisecond * 100
+		config.OdooSecret = "hi!"
 
 		app, _ := createTestApp(t)
 
-		req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/?token=%s", odooSecret), nil)
+		req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/?token=%s", config.OdooSecret), nil)
 
 		res, err := app.Test(req)
 		assertNotErr(t, err)
@@ -161,16 +167,18 @@ func TestRequestProcessing(t *testing.T) {
 	})
 
 	t.Run("ShouldImmediatelyDispatchRequest", func(t *testing.T) {
-		loginServer := createLoginServer(t, fmaUsername, fmaPassword)
+		loginServer := createLoginServer(t, config.FmaUsername, config.FmaPassword)
 		dispatchServer, getDispatches := createDispatchServer(t)
 
-		fmaLoginURL = loginServer.URL
-		fmaDispatchURL = dispatchServer.URL
-		odooSecret = "hi!"
+		config.FmaLoginURL = loginServer.URL
+		config.FmaDispatchURL = dispatchServer.URL
+		config.LoginInterval = time.Millisecond * 100
+		config.PollInterval = time.Millisecond * 100
+		config.OdooSecret = "hi!"
 
 		app, _ := createTestApp(t)
 
-		req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/?token=%s", odooSecret), strings.NewReader("FOO IS GREAT"))
+		req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/?token=%s", config.OdooSecret), strings.NewReader("FOO IS GREAT"))
 
 		res, err := app.Test(req)
 		assertNotErr(t, err)
@@ -188,12 +196,14 @@ func TestRequestProcessing(t *testing.T) {
 	})
 
 	t.Run("ShouldDispatchOlderRequestsFirst", func(t *testing.T) {
-		loginServer := createLoginServer(t, fmaUsername, fmaPassword)
+		loginServer := createLoginServer(t, config.FmaUsername, config.FmaPassword)
 		dispatchServer, getDispatches := createDispatchServer(t)
 
-		fmaLoginURL = loginServer.URL
-		fmaDispatchURL = dispatchServer.URL
-		odooSecret = "hi!"
+		config.FmaLoginURL = loginServer.URL
+		config.FmaDispatchURL = dispatchServer.URL
+		config.LoginInterval = time.Millisecond * 100
+		config.PollInterval = time.Millisecond * 100
+		config.OdooSecret = "hi!"
 
 		app, db := createTestApp(t)
 
@@ -213,7 +223,7 @@ func TestRequestProcessing(t *testing.T) {
 		})
 		assertNotErr(t, err)
 
-		req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/?token=%s", odooSecret), strings.NewReader("NAZ"))
+		req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/?token=%s", config.OdooSecret), strings.NewReader("NAZ"))
 
 		res, err := app.Test(req)
 		assertNotErr(t, err)
@@ -240,13 +250,14 @@ func TestRequestProcessing(t *testing.T) {
 	})
 
 	t.Run("ShouldDispatchAfterInterval", func(t *testing.T) {
-		loginServer := createLoginServer(t, fmaUsername, fmaPassword)
+		loginServer := createLoginServer(t, config.FmaUsername, config.FmaPassword)
 		dispatchServer, getDispatches := createDispatchServer(t)
 
-		fmaLoginURL = loginServer.URL
-		fmaDispatchURL = dispatchServer.URL
-		odooSecret = "hi!"
-		pollInterval = time.Millisecond * 350
+		config.FmaLoginURL = loginServer.URL
+		config.FmaDispatchURL = dispatchServer.URL
+		config.OdooSecret = "hi!"
+		config.PollInterval = time.Millisecond * 350
+		config.LoginInterval = time.Millisecond * 100
 
 		_, db := createTestApp(t)
 		_, err := insertRequest(ctx, db, request{
@@ -296,11 +307,11 @@ func TestRequestProcessing(t *testing.T) {
 
 		dispatchServer, _ := createDispatchServer(t)
 
-		fmaLoginURL = loginServer.URL
-		fmaDispatchURL = dispatchServer.URL
-		odooSecret = "hi!"
-		pollInterval = time.Millisecond * 350
-		loginInterval = time.Millisecond * 100
+		config.FmaLoginURL = loginServer.URL
+		config.FmaDispatchURL = dispatchServer.URL
+		config.OdooSecret = "hi!"
+		config.PollInterval = time.Millisecond * 350
+		config.LoginInterval = time.Millisecond * 100
 
 		createTestApp(t)
 

@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"os"
@@ -62,32 +62,32 @@ func TestLoadConfigFromEnv(t *testing.T) {
 
 		loadConfigFromEnv()
 
-		if httpPort != "3500" {
-			t.Errorf("expected httpPort to be 3500 but got, %s", httpPort)
+		if HttpPort != "3500" {
+			t.Errorf("expected httpPort to be 3500 but got, %s", HttpPort)
 		}
 
-		if fmaUsername != "admin" {
-			t.Errorf("expected fmaUsername to be admin but got, %s", fmaUsername)
+		if FmaUsername != "admin" {
+			t.Errorf("expected fmaUsername to be admin but got, %s", FmaUsername)
 		}
 
-		if fmaPassword != "admin" {
-			t.Errorf("expected fmaPassword to be admin but got, %s", fmaPassword)
+		if FmaPassword != "admin" {
+			t.Errorf("expected fmaPassword to be admin but got, %s", FmaPassword)
 		}
 
-		if fmaLoginURL != "login" {
-			t.Errorf("expected fmaLoginURL to be login but got, %s", fmaLoginURL)
+		if FmaLoginURL != "login" {
+			t.Errorf("expected fmaLoginURL to be login but got, %s", FmaLoginURL)
 		}
 
-		if fmaDispatchURL != "dispatch" {
-			t.Errorf("expected fmaDispatchURL to be dispatch but got, %s", fmaDispatchURL)
+		if FmaDispatchURL != "dispatch" {
+			t.Errorf("expected fmaDispatchURL to be dispatch but got, %s", FmaDispatchURL)
 		}
 
-		if dbFile != "FILO.db" {
-			t.Errorf("expected dbFile to be FILO.db but got, %s", dbFile)
+		if DbFile != "FILO.db" {
+			t.Errorf("expected dbFile to be FILO.db but got, %s", DbFile)
 		}
 
-		if odooSecret != "FOO" {
-			t.Errorf("expected odooSecret to be FOO but got, %s", odooSecret)
+		if OdooSecret != "FOO" {
+			t.Errorf("expected odooSecret to be FOO but got, %s", OdooSecret)
 		}
 	})
 }
