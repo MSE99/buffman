@@ -7,7 +7,10 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/mse99/buffman/buffman"
 	"github.com/mse99/buffman/config"
+	"github.com/mse99/buffman/repos"
+	"github.com/mse99/buffman/web"
 )
 
 func main() {
@@ -19,24 +22,18 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
 	defer cancel()
 
-	db, dbErr := connectToDB(ctx, config.DbFile)
+	db, dbErr := repos.ConnectToDB(ctx, config.DbFile)
 	if dbErr != nil {
 		log.Fatal(dbErr)
 	}
 	defer db.Close()
 
-	tk, tkErr := newFmaToken(ctx)
-	if tkErr != nil {
-		log.Fatal(tkErr)
+	dispatchErr := buffman.StartDispatchToFMA(ctx, db)
+	if dispatchErr != nil {
+		log.Panic(dispatchErr)
 	}
-	go tk.waitAndRefresh()
 
-	go processStoredRequests(ctx, requestProcessingOpts{
-		db: db,
-		tk: tk,
-	})
-
-	app := createHttpServer(ctx, db)
+	app := web.CreateServer(ctx, db)
 
 	go func() {
 		err := app.Listen(":" + config.HttpPort)
