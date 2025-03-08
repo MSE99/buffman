@@ -59,6 +59,7 @@ func TestLoadConfigFromEnv(t *testing.T) {
 		os.Setenv("FMA_DISPATCH_URL", "dispatch")
 		os.Setenv("DB", "FILO.db")
 		os.Setenv("ODOO_SECRET", "FOO")
+		os.Setenv("DISPATCH_STRATEGY", "continue")
 
 		loadConfigFromEnv()
 
@@ -88,6 +89,10 @@ func TestLoadConfigFromEnv(t *testing.T) {
 
 		if OdooSecret != "FOO" {
 			t.Errorf("expected odooSecret to be FOO but got, %s", OdooSecret)
+		}
+
+		if !ContinueOnError {
+			t.Errorf("expected ContinueOnError to be true")
 		}
 	})
 }

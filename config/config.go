@@ -9,16 +9,17 @@ import (
 )
 
 var (
-	HttpPort       string
-	FmaUsername    string
-	FmaPassword    string
-	FmaLoginURL    string
-	FmaDispatchURL string
-	DbFile         string
-	Env            string
-	OdooSecret     string
-	PollInterval   time.Duration
-	LoginInterval  time.Duration
+	HttpPort        string
+	FmaUsername     string
+	FmaPassword     string
+	FmaLoginURL     string
+	FmaDispatchURL  string
+	DbFile          string
+	Env             string
+	OdooSecret      string
+	PollInterval    time.Duration
+	LoginInterval   time.Duration
+	ContinueOnError bool
 )
 
 func loadConfigFromEnv() {
@@ -34,6 +35,7 @@ func loadConfigFromEnv() {
 	FmaDispatchURL = getEnv("FMA_DISPATCH_URL")
 	DbFile = getEnv("DB")
 	OdooSecret = getEnv("ODOO_SECRET")
+	ContinueOnError = getEnv("DISPATCH_STRATEGY", "break") == "continue"
 
 	parsedPollIntr, pollErr := time.ParseDuration(getEnv("POLL_INTERVAL", "1s"))
 	if pollErr != nil {
