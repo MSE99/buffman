@@ -52,7 +52,11 @@ func loadAndDispatch(ctx context.Context, opts requestProcessingOpts) {
 
 		if err != nil {
 			log.Println("error while dispatching request", err)
-			return
+
+			if !config.ContinueOnError {
+				log.Println("continuing dispatch")
+				return
+			}
 		}
 
 		deleteRequestByID(ctx, opts.db, req.Id)
