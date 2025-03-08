@@ -45,6 +45,7 @@ func loadAndDispatch(ctx context.Context, opts requestProcessingOpts) {
 	requests, err := loadUnfinishedRequests(ctx, opts.db)
 	if err != nil {
 		log.Println("error while loading requests", err)
+		return
 	}
 
 	for _, req := range requests {
@@ -54,7 +55,7 @@ func loadAndDispatch(ctx context.Context, opts requestProcessingOpts) {
 			log.Println("error while dispatching request", err)
 
 			if !config.ContinueOnError {
-				log.Println("continuing dispatch")
+				log.Println("stopping dispatch")
 				return
 			}
 		}
