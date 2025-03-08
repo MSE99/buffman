@@ -35,9 +35,12 @@ func createQueueRequestHandler(ctx context.Context, db *sql.DB) func(*fiber.Ctx)
 			return c.Status(http.StatusBadRequest).Send([]byte("Invalid body sent"))
 		}
 
-		queueErr := buffman.QueueRequest(ctx, db, buffman.Request{Payload: payload, CreatedOn: time.Now()})
+		queueCtx, cancel := context.WithTimeout(ctx, time.Millisecond*50)
+		defer cancel()
+
+		queueErr := buffman.QueueRequest(queueCtx, db, payload)
 		if queueErr != nil {
-			log.Println(queueErr)
+			log.Println("Error while attempting to queue request", queueErr)
 			return c.Status(http.StatusInternalServerError).Send([]byte(""))
 		}
 

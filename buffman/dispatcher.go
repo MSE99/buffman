@@ -3,6 +3,7 @@ package buffman
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -85,19 +86,22 @@ func dispatchRequest(ctx context.Context, req Request, opts requestProcessingOpt
 	return nil
 }
 
-func QueueRequest(ctx context.Context, db *sql.DB, r Request) error {
-	_, err := insertRequest(ctx, db, r)
+func QueueRequest(ctx context.Context, db *sql.DB, payload string) error {
+	if len(strings.Trim(payload, " ")) == 0 {
+		return errors.New("request payload cannot be empty")
+	}
+
+	_, err := insertRequest(ctx, db, Request{
+		Payload:   payload,
+		CreatedOn: time.Now(),
+	})
+
 	if err != nil {
 		return err
 	}
 
-	timer := time.NewTimer(time.Millisecond * 50)
-	defer timer.Stop()
-
 	select {
 	case processRequestsNow <- struct{}{}:
-		return nil
-	case <-timer.C:
 		return nil
 	case <-ctx.Done():
 		return nil
